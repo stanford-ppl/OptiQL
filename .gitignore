@@ -1,0 +1,10 @@
+.idea
+out
+scala/project/boot
+*.class
+*.iml
+*.ipr
+*.iws
+*.idea
+*target
+*lib_managed
