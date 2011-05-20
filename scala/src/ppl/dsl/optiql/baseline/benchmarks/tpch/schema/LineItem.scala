@@ -22,7 +22,7 @@ class LineItem (
   val shipInstruct: String,
   val shipMode: String,
   val comment: String
-)
+) extends Serializable
 
 class LineItemTable extends DataTable[LineItem] {
 

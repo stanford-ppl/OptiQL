@@ -13,7 +13,7 @@ class Customer (
   val accountBalance: Float,
   val marketSegment: String,
   val comment: String
-)
+) extends Serializable
 
 class CustomerTable extends DataTable[Customer]  {
 

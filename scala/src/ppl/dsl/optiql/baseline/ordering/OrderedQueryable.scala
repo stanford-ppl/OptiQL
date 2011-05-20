@@ -7,7 +7,9 @@ class OrderedQueryable[TElement](source: Iterable[TElement], currentComparer: Or
 
   def createOrderedQueryable[TKey](keySelector: TElement => TKey, comparer: Ordering[TKey], descending: Boolean = false): OrderedQueryable[TElement] = {
     if(keySelector == null) throw new IllegalArgumentException("keySelector is null")
-    val secondaryComparer = new ProjectionComparer(keySelector)(comparer)
+    var secondaryComparer: Ordering[TElement] = new ProjectionComparer(keySelector)(comparer)
+    if(descending)
+      secondaryComparer = new ReverseComparer(secondaryComparer)
     return new OrderedQueryable(source,new CompoundComparer(currentComparer, secondaryComparer))
   }
 
@@ -22,4 +24,10 @@ class OrderedQueryable[TElement](source: Iterable[TElement], currentComparer: Or
   def ThenBy[TKey](keySelector: TElement => TKey)(implicit comparer: Ordering[TKey]) = {
     createOrderedQueryable(keySelector, comparer)
   }
+
+  def ThenByDescending[TKey](keySelector: TElement => TKey)(implicit comparer: Ordering[TKey]) = {
+    createOrderedQueryable(keySelector, comparer, true)
+  }
+
+
 }

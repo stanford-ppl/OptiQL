@@ -4,7 +4,7 @@ import ppl.dsl.optiql.baseline.util.Date
 import collection.mutable.ArrayBuffer
 import ppl.dsl.optiql.baseline.containers.DataTable
 
-case class Order (
+class Order (
   val key: Int,
   val customerKey: Int,
   val status: Char,
@@ -14,7 +14,7 @@ case class Order (
   val clerk: String,
   val shipPriority: Int,
   val comment: String
-)
+) extends Serializable
 
 class OrderTable extends DataTable[Order] {
 

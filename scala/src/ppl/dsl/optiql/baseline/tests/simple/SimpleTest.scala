@@ -19,7 +19,7 @@ object SimpleTest {
       val TotalDuration = g.Sum(_.Duration)
       val AverageDuration = g.Average(_.Duration)
     }) OrderBy (_.Name)
-    q4.printAsTable
+    q4.printAsTable()
 
 
 

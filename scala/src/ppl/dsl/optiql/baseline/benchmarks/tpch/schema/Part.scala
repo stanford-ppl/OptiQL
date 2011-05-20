@@ -13,7 +13,7 @@ class Part(
   val container: String,
   val retailPrice: Float,
   val comment:String
-)
+) extends Serializable
 
 class PartTable extends DataTable[Part]  {
 

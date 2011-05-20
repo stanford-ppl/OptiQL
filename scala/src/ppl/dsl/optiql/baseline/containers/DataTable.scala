@@ -5,11 +5,12 @@ import collection.generic.CanBuildFrom
 import collection.Iterable
 import ppl.dsl.optiql.baseline.util.{ReflectionHelper, Date}
 import ppl.dsl.optiql.baseline.OptiQL
+import com.sun.xml.internal.ws.developer.MemberSubmissionAddressing.Validation
 
 //this includes functionality for loading TPCH style data
 abstract class DataTable[TSource] extends Iterable[TSource] {
 
-  val data = new ArrayBuffer[TSource]
+  var data = new ArrayBuffer[TSource]
 
   val grouped = false
 
@@ -20,7 +21,7 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
     val ndata = data.filter(p)
     new DataTable[TSource] {
 
-      override val data = ndata
+      data = ndata
 
       def addRecord(arr: Array[String]) {
         throw new RuntimeException("Cannot  add Record into a projected DataTable")
@@ -59,7 +60,7 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
 
   //todo clean this up
   //for example, I can use reflection to generate the metadata that I need to print the table
-  def printAsTable() {
+  def printAsTable(rows: Int = 0) {
 
     // Check if Table is empty
     if(data.size == 0) {
@@ -74,7 +75,7 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
     if(grouped) {
       handleGroupedTable
     } else {
-      handleNormalTable
+      handleNormalTable(rows)
     }
 
   }
@@ -84,14 +85,14 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
       val group = key.asInstanceOf[Grouping[_,_]]
       println("Key = " + group.key)
       val table = OptiQL.convertIterableToDataTable(group.elems)
-      table.printAsTable
+      table.printAsTable()
     }
 
   }
 
-  private def handleNormalTable() {
+  private def handleNormalTable(rows: Int = 0) {
     implicit val tableStr = new StringBuilder
-    val columnSizes = getTableColSizes()
+    val columnSizes = getTableColSizes(rows)
 
     def horizontalRule = {
       for(i <- 0 until columnSizes.size )
@@ -116,7 +117,8 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
     print(tableStr.toString)
     tableStr.clear
 
-    for(r <- 0 until data.size) {
+    val size = if(rows != 0) rows else data.size
+    for(r <- 0 until size) {
       emitRecordAsRow(r, columnSizes)
     }
     print(tableStr.toString)
@@ -130,7 +132,7 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
 
   private def max(a: Int, b: Int) = if(a > b)  a else b
 
-  private def getTableColSizes(): Array[Int] = {
+  private def getTableColSizes(rows: Int = 0): Array[Int] = {
     if(data.size==0)
       return new Array[Int](0)
 
@@ -149,12 +151,14 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
     }
 
     //columns should be at least the size of maximal element
-    for(d <- data) {
+    val size = if(rows != 0) rows else data.size
+    for(i <- 0 until size ) {
       idx = 0
       while ( idx < fields.size) {
-        columnSizes(idx) = max(columnSizes(idx), fields(idx).get(d).toString.length + 2)
+        columnSizes(idx) = max(columnSizes(idx), fields(idx).get(data(i)).toString.length + 2)
         idx += 1
       }
+      //this will never be the case if rows = 0
     }
 
     return columnSizes

@@ -9,7 +9,7 @@ class PartSupplier (
   val availableQty: Int,
   val supplyCost: Float,
   val comment: String
-)
+) extends Serializable
 
 class PartSupplierTable extends DataTable[PartSupplier] {
 

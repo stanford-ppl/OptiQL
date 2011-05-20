@@ -8,7 +8,7 @@ class Region (
   val key: Int,
   val name: String,
   val comment: String
-)
+) extends Serializable
 
 class RegionTable extends DataTable[Region] {
 

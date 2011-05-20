@@ -1,10 +1,12 @@
 package ppl.dsl.optiql.baseline.benchmarks.tpch
 
-import java.io.File
 import schema._
 import ppl.dsl.optiql.baseline.containers.DataTable
 import ppl.dsl.optiql.baseline.util.{Date, Interval}
 import ppl.dsl.optiql.baseline.OptiQL
+import collection.mutable.ArrayBuffer
+import java.io._
+import javax.management.remote.rmi._RMIConnection_Stub
 
 object TPCH {
 
@@ -31,6 +33,27 @@ object TPCH {
   val suppliers = new SupplierTable
   loadTPCHTable("supplier", suppliers)
 
+  def loadTPCHTable[T](path: String, table: DataTable[T]) {
+    log("loading tpch table from file[" + tpchDataPath + "/" + path +"] into memory")
+      val filename = tpchDataPath + "/" + path + ".tbl"
+      val file = new File(filename)
+      if(file.isFile == false) throw new RuntimeException(filename + " doesn't appear to be a valid file")
+      //load each line
+      val records = scala.io.Source.fromFile(file).getLines()
+      var i = 0
+      while(records.hasNext) {
+        val record = records.next
+        val fields = record.split('|')
+        table.addRecord(fields)
+        i += 1
+        if(i%500000 == 0) println("processed " + i + " records")
+      }
+  }
+
+  def log(msg: String) {
+    if(debug) println(msg)
+  }
+
 
 
   def main(args: Array[String]) {
@@ -40,6 +63,7 @@ object TPCH {
     log("Loaded input, now executing Queries")
     //Execute TPC-H queries against my tables
     //val q1 = lineItems Where(_.lineNumber < 5)
+    println("TPCH Q1:")
     val q1 = lineItems Where(_.shipDate <= Date("1998-12-01") + Interval(90).days) GroupBy(l => (l.returnFlag,l.lineStatus)) Select(g => new {
       val returnFlag = g.key._1
       val lineStatus = g.key._2
@@ -51,12 +75,10 @@ object TPCH {
       val avgPrice = g.Average(_.extendedPrice)
       val avgDiscount = g.Average(_.discount)
       val countOrder = g.Count
-    }) OrderBy(_.lineStatus) ThenBy(_.returnFlag)
+    }) OrderBy(_.returnFlag) ThenBy(_.lineStatus)
+    q1.printAsTable()
 
-
-    println("TPCH Q1:")
-    q1.printAsTable
-
+    println("TPCH Q3:")
     val q3 = customers.Where(_.marketSegment == "BUILDING").
       Join(orders)(_.key, _.customerKey, (customer, order)=> new {
       val orderKey = order.key
@@ -69,39 +91,15 @@ object TPCH {
       val orderShipDate = li.shipDate
       val extendedPrice = li.extendedPrice
       val discount = li.discount
-    }).Where(col => col.orderDate < Date("1995-03-15") && col.orderShipDate < Date("1995-03-15")
+    }).Where(col => col.orderDate < Date("1995-03-15") && col.orderShipDate > Date("1995-03-15")
     ).GroupBy(col => (col.orderKey,col.orderDate,col.orderShipPriority)) Select(g => new {
       val orderKey = g.key._1
       val revenue = g.Sum(e => e.extendedPrice * (1 - e.discount))
       val orderDate = g.key._2
-      val shipPriority = g.key._2
-    })
-
-
-    println("TPCH Q3:")
-    q3.printAsTable
+      val shipPriority = g.key._3
+    }) OrderByDescending(_.revenue) ThenBy(_.orderDate)
+    q3.printAsTable(10)
   }
 
-  def loadTPCHTable(path: String, table: DataTable[_]) = {
-    log("loading tpch table from file[" + tpchDataPath + "/" + path +"] into memory")
-    //open file for reading
-    val filename = tpchDataPath + "/" + path + ".tbl"
-    val file = new File(filename)
-    if(file.isFile == false) throw new RuntimeException(filename + " doesn't appear to be a valid file")
-    //load each line
-    val records = scala.io.Source.fromFile(file).getLines()
-    var i = 0
-    while(records.hasNext) {
-      val record = records.next
-      val fields = record.split('|')
-      table.addRecord(fields)
-      i += 1
-      if(i%10000 == 0) println("processed " + i + " records")
-    }
-    table
-  }
 
-  def log(msg: String) {
-    if(debug) println(msg)
-  }
 }

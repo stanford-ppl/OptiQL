@@ -13,7 +13,7 @@ object Date {
 
 
 
-abstract class Date(val year:Int, val month:Int, val day:Int) {
+abstract class Date(val year:Int, val month:Int, val day:Int)  extends Serializable {
   //Intervals
   def +(interval: Interval): Date
 
@@ -24,6 +24,13 @@ abstract class Date(val year:Int, val month:Int, val day:Int) {
     else if(month != that.month)
       month < that.month
     else day <= that.day
+  }
+
+  def ==(that:Date) = {
+    if(year == that.year && month == that.month && day == that.day)
+      true
+    else
+      false
   }
 
   def <(that:Date) = (year < that.year ) || (year == that.year && (month < that.month || (month == that.month && day < that.day)))
@@ -63,5 +70,17 @@ case class DateTime(_year: Int, _month:Int, _day:Int, hour:Int, minute:Int, seco
 
   def +(interval: Interval) = ni
 
+}
+
+
+class DateOrdering extends Ordering[Date] {
+  def compare(x: Date, y: Date) = {
+    if(x < y)
+      -1
+    else if (x == y)
+      0
+    else
+      1
+  }
 }
 

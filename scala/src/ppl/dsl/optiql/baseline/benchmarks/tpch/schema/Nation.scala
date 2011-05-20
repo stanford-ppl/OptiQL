@@ -9,7 +9,7 @@ class Nation (
   val name: String,
   val regionKey: Int,
   val comment: String
-)
+) extends Serializable
 
 class NationTable extends DataTable[Nation] {
 

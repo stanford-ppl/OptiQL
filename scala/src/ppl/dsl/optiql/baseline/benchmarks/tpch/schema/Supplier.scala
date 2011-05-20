@@ -11,7 +11,7 @@ class Supplier(
   val phone: String,
   val accountBalance: Float,
   val comment: String
-)
+) extends Serializable
 
 class SupplierTable extends DataTable[Supplier] {
 
