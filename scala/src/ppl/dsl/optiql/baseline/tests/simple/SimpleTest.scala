@@ -10,7 +10,7 @@ object SimpleTest {
     val calls = CallLog.SampleData()
     val contacts = Contact.SampleData()
 
-    val q4 = calls.Join(contacts)(_.Number, _.Phone, (call, contact) => new {
+    val q4 = calls.OldJoin(contacts)(_.Number, _.Phone, (call, contact) => new {
       val Name = contact.FirstName + " " + contact.LastName
       val Number = call.Number
       val Duration = call.Duration

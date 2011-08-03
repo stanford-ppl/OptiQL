@@ -6,23 +6,23 @@ import ppl.dsl.optiql.baseline.containers.DataTable
 
 
 class LineItem (
-  val orderKey: Int,
-  val partKey: Int,
-  val supplierKey: Int,
-  val lineNumber: Int,
-  val quantity: Float,
-  val extendedPrice: Float,
-  val discount: Float,
-  val tax: Float,
-  val returnFlag: Char,
-  val lineStatus: Char,
-  val shipDate: Date,
-  val commitDate: Date,
-  val receiptDate: Date,
-  val shipInstruct: String,
-  val shipMode: String,
-  val comment: String
-) extends Serializable
+  val l_orderkey: Int,
+  val l_partkey: Int,
+  val l_suppkey: Int,
+  val l_linenumber: Int,
+  val l_quantity: Float,
+  val l_extendedprice: Float,
+  val l_discount: Float,
+  val l_tax: Float,
+  val l_returnflag: Char,
+  val l_linestatus: Char,
+  val l_shipdate: Date,
+  val l_commitdate: Date,
+  val l_receiptdate: Date,
+  val l_shipinstruct: String,
+  val l_shipmode: String,
+  val l_comment: String
+)
 
 class LineItemTable extends DataTable[LineItem] {
 

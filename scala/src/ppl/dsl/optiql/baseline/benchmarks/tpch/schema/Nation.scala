@@ -5,11 +5,11 @@ import ppl.dsl.optiql.baseline.containers.DataTable
 
 
 class Nation (
-  val key: Int,
-  val name: String,
-  val regionKey: Int,
-  val comment: String
-) extends Serializable
+  val n_nationkey: Int,
+  val n_name: String,
+  val n_regionkey: Int,
+  val n_comment: String
+)
 
 class NationTable extends DataTable[Nation] {
 

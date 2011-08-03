@@ -4,16 +4,16 @@ import collection.mutable.ArrayBuffer
 import ppl.dsl.optiql.baseline.containers.DataTable
 
 class Part(
-  val key:Int,
-  val name: String,
-  val mfgr: String,
-  val brand: String,
-  val pType: String,
-  val size: Int,
-  val container: String,
-  val retailPrice: Float,
-  val comment:String
-) extends Serializable
+  val p_partkey: Int,
+  val p_name: String,
+  val p_mfgr: String,
+  val p_brand: String,
+  val p_type: String,
+  val p_size: Int,
+  val p_container: String,
+  val p_retailprice: Float,
+  val p_comment:String
+)
 
 class PartTable extends DataTable[Part]  {
 

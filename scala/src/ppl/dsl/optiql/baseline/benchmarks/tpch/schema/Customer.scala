@@ -5,15 +5,15 @@ import ppl.dsl.optiql.baseline.containers.DataTable
 
 
 class Customer (
-  val key: Int,
-  val name: String,
-  val address: String,
-  val nationKey: Int,
-  val phone: String,
-  val accountBalance: Float,
-  val marketSegment: String,
-  val comment: String
-) extends Serializable
+  val c_custkey: Int,
+  val c_name: String,
+  val c_address: String,
+  val c_nationkey: Int,
+  val c_phone: String,
+  val c_acctbal: Float,
+  val c_mktsegment: String,
+  val c_comment: String
+)
 
 class CustomerTable extends DataTable[Customer]  {
 

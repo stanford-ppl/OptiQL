@@ -60,7 +60,7 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
 
   //todo clean this up
   //for example, I can use reflection to generate the metadata that I need to print the table
-  def printAsTable(rows: Int = 0) {
+  def printAsTable(rows: Int = 100) {
 
     // Check if Table is empty
     if(data.size == 0) {
@@ -117,7 +117,7 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
     print(tableStr.toString)
     tableStr.clear
 
-    val size = if(rows != 0) rows else data.size
+    val size = if(rows != 0 && rows < data.size) rows else data.size
     for(r <- 0 until size) {
       emitRecordAsRow(r, columnSizes)
     }
@@ -151,7 +151,7 @@ abstract class DataTable[TSource] extends Iterable[TSource] {
     }
 
     //columns should be at least the size of maximal element
-    val size = if(rows != 0) rows else data.size
+    val size = if(rows != 0 && rows < data.size) rows else data.size
     for(i <- 0 until size ) {
       idx = 0
       while ( idx < fields.size) {

@@ -13,7 +13,7 @@ object Date {
 
 
 
-abstract class Date(val year:Int, val month:Int, val day:Int)  extends Serializable {
+abstract class Date(val year:Int, val month:Int, val day:Int) {
   //Intervals
   def +(interval: Interval): Date
 
@@ -37,9 +37,7 @@ abstract class Date(val year:Int, val month:Int, val day:Int)  extends Serializa
 
   def >(that:Date) = (this <= that) == false
 
-
-
-
+  def >= (that: Date) = (this == that) || (this > that)
 
   private[util] def ni = throw new RuntimeException("not implemented")
 }

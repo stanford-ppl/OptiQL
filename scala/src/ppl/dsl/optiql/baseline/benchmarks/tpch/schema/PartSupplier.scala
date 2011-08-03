@@ -4,12 +4,12 @@ import ppl.dsl.optiql.baseline.containers.DataTable
 
 
 class PartSupplier (
-  val key: Int,
-  val supplierKey: Int,
-  val availableQty: Int,
-  val supplyCost: Float,
-  val comment: String
-) extends Serializable
+  val ps_partkey: Int,
+  val ps_suppkey: Int,
+  val ps_availqty: Int,
+  val ps_supplycost: Float,
+  val ps_comment: String
+)
 
 class PartSupplierTable extends DataTable[PartSupplier] {
 

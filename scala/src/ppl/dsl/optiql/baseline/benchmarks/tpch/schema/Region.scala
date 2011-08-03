@@ -5,10 +5,10 @@ import ppl.dsl.optiql.baseline.containers.DataTable
 
 
 class Region (
-  val key: Int,
-  val name: String,
-  val comment: String
-) extends Serializable
+  val r_regionkey: Int,
+  val r_name: String,
+  val r_comment: String
+)
 
 class RegionTable extends DataTable[Region] {
 
