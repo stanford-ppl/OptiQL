@@ -8,7 +8,7 @@ class Supplier(
   val s_address: String,
   val s_nationkey: Int,
   val s_phone: String,
-  val s_acctbal: Float,
+  val s_acctbal: Double,
   val s_comment: String
 )
 

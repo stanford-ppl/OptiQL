@@ -2,15 +2,15 @@ package ppl.dsl.optiql.baseline.benchmarks.tpch
 
 import schema._
 import ppl.dsl.optiql.baseline.containers.DataTable
-import ppl.dsl.optiql.baseline.OptiQL
 import java.io._
 import ppl.dsl.optiql.baseline.util.{PerformanceTimer, Date, Interval}
 import com.sun.corba.se.spi.activation._ActivatorImplBase
+import ppl.dsl.optiql.baseline.{Config, OptiQL}
 
 
 object TPCH {
 
-  val tpchDataPath="C:/vm_host/tpch/SF1"
+  val tpchDataPath= Config.tpch_dir + File.separator + "SF" + Config.tpch_factor
   val debug = true
 
   log("TPCH style benchmarking of OptiQL")
@@ -64,24 +64,24 @@ object TPCH {
     //Execute TPC-H queries against my tables
     //val q1 = lineItems Where(_.lineNumber < 5)
 
-//    println("TPCH Q1:")
-//    PerformanceTimer.start("q1",false)
-//    val q1 = lineItems Where(_.l_shipdate <= Date("1998-12-01") + Interval(90).days) GroupBy(l => (l.l_returnflag,l.l_linestatus)) Select(g => new {
-//      val returnFlag = g.key._1
-//      val lineStatus = g.key._2
-//      val sumQty = g.Sum(_.l_quantity)
-//      val sumBasePrice = g.Sum(_.l_extendedprice)
-//      val sumDiscountedPrice = g.Sum(l => l.l_extendedprice * (1-l.l_discount))
-//      val sumCharge = g.Sum(l=> l.l_extendedprice * (1-l.l_discount) * (1+l.l_tax))
-//      val avgQty = g.Average(_.l_quantity)
-//      val avgPrice = g.Average(_.l_extendedprice)
-//      val avgDiscount = g.Average(_.l_discount)
-//      val countOrder = g.Count
-//    }) OrderBy(_.returnFlag) ThenBy(_.lineStatus)
-//    println(q1.iterator) // to force it to sort
-//    PerformanceTimer.stop("q1",false)
-//    PerformanceTimer.print("q1")
-//    q1.printAsTable()
+    println("TPCH Q1:")
+    PerformanceTimer.start("q1",false)
+    val q1 = lineItems Where(_.l_shipdate <= Date("1998-12-01") + Interval(90).days) GroupBy(l => (l.l_returnflag,l.l_linestatus)) Select(g => new {
+      val returnFlag = g.key._1
+      val lineStatus = g.key._2
+      val sumQty = g.Sum(_.l_quantity)
+      val sumBasePrice = g.Sum(_.l_extendedprice)
+      val sumDiscountedPrice = g.Sum(l => l.l_extendedprice * (1-l.l_discount))
+      val sumCharge = g.Sum(l=> l.l_extendedprice * (1-l.l_discount) * (1+l.l_tax))
+      val avgQty = g.Average(_.l_quantity)
+      val avgPrice = g.Average(_.l_extendedprice)
+      val avgDiscount = g.Average(_.l_discount)
+      val countOrder = g.Count
+    }) OrderBy(_.returnFlag) ThenBy(_.lineStatus)
+    println(q1.iterator) // to force it to sort
+    PerformanceTimer.stop("q1",false)
+    PerformanceTimer.print("q1")
+    q1.printAsTable()
 
     println("TPCH Q2:")
     PerformanceTimer.start("q2", false)
@@ -140,86 +140,59 @@ object TPCH {
     PerformanceTimer.print("q2")
     q2.printAsTable(100)
 
-    println("TPCH Q2mj:")
-    PerformanceTimer.start("q2mj", false)
-    val q2mj = regions.Where(_.r_name == "EUROPE").Join(nations).WhereEq(_.r_regionkey, _.n_regionkey).
-      With(suppliers).WhereEq((_:Nation).n_nationkey, (_:Supplier).s_nationkey).
-      With(partSuppliers).WhereEq((_:Supplier).s_suppkey, (_:PartSupplier).ps_suppkey).
-      With(parts).Where(_.p_size == 15).Where(_.p_type.endsWith("BRASS")).WhereEq((_:PartSupplier).ps_partkey, (_:Part).p_partkey).
-      Select((r, n, s, ps, p) => new {
-        val s_acctbal = s.s_acctbal
-        val s_name = s.s_name
-        val n_name = n.n_name
-        val p_partkey = p.p_partkey
-        val p_mfgr = p.p_mfgr
-        val s_address = s.s_address
-        val s_phone = s.s_phone
-        val s_comment = s.s_comment
-        val ps_supplycost = ps.ps_supplycost
-      }).Where(j => j.ps_supplycost == {
-        val pssc = partSuppliers.Where(_.ps_partkey == j.p_partkey).Join(suppliers).WhereEq(_.ps_suppkey, _.s_suppkey).
-          With(nations).WhereEq((_:Supplier).s_nationkey, (_:Nation).n_nationkey).
-          With(regions).Where(_.r_name == "EUROPE").WhereEq((_:Nation).n_regionkey, (_:Region).r_regionkey).
-          Select((ps, s, n, r) => new {
-           val ps_supplycost = ps.ps_supplycost
-         }).Min(_.ps_supplycost);
-        if(pssc != null) pssc.ps_supplycost else -10}
-      ).OrderByDescending(_.s_acctbal).ThenBy(_.n_name).ThenBy(_.s_name).ThenBy (_.p_partkey)
-    println(q2mj.iterator) // to force it to sort
-    PerformanceTimer.stop("q2mj", false)
-    PerformanceTimer.print("q2mj")
-    q2mj.printAsTable(100)
-
-
-    println("TPCH Q3:")
-    PerformanceTimer.start("q3",false)
-    val q3 = customers.Where(_.c_mktsegment == "BUILDING").
-      OldJoin(orders)(_.c_custkey, _.o_custkey, (customer, order)=> new {
-      val orderKey = order.o_orderkey
-      val orderDate = order.o_orderdate
-      val orderShipPriority = order.o_shippriority
-    }).OldJoin(lineItems)(_.orderKey, _.l_orderkey, (co, li)=> new {
-      val orderKey = co.orderKey
-      val orderDate = co.orderDate
-      val orderShipPriority = co.orderShipPriority
-      val orderShipDate = li.l_shipdate
-      val extendedPrice = li.l_extendedprice
-      val discount = li.l_discount
-    }).Where(col => col.orderDate < Date("1995-03-15") && col.orderShipDate > Date("1995-03-15")
-    ).GroupBy(col => (col.orderKey,col.orderDate,col.orderShipPriority)) Select(g => new {
-      val orderKey = g.key._1
-      val revenue = g.Sum(e => e.extendedPrice * (1 - e.discount))
-      val orderDate = g.key._2
-      val shipPriority = g.key._3
-    }) OrderByDescending(_.revenue) ThenBy(_.orderDate)
-    println(q3.iterator)
-    PerformanceTimer.stop("q3",false)
-    q3.printAsTable(10)
-    PerformanceTimer.print("q3")
+//    println("TPCH Q2:")
+//    PerformanceTimer.start("q2", false)
+//    val q2 = regions.Where(_.r_name == "EUROPE").Join(nations).WhereEq(_.r_regionkey, _.n_regionkey).
+//      With(suppliers).WhereEq((_:Nation).n_nationkey, (_:Supplier).s_nationkey).
+//      With(partSuppliers).WhereEq((_:Supplier).s_suppkey, (_:PartSupplier).ps_suppkey).
+//      With(parts).Where(_.p_size == 15).Where(_.p_type.endsWith("BRASS")).WhereEq((_:PartSupplier).ps_partkey, (_:Part).p_partkey).
+//      Select((r, n, s, ps, p) => new {
+//        val s_acctbal = s.s_acctbal
+//        val s_name = s.s_name
+//        val n_name = n.n_name
+//        val p_partkey = p.p_partkey
+//        val p_mfgr = p.p_mfgr
+//        val s_address = s.s_address
+//        val s_phone = s.s_phone
+//        val s_comment = s.s_comment
+//        val ps_supplycost = ps.ps_supplycost
+//      }).Where(j => j.ps_supplycost == {
+//        val pssc = partSuppliers.Where(_.ps_partkey == j.p_partkey).Join(suppliers).WhereEq(_.ps_suppkey, _.s_suppkey).
+//          With(nations).WhereEq((_:Supplier).s_nationkey, (_:Nation).n_nationkey).
+//          With(regions).Where(_.r_name == "EUROPE").WhereEq((_:Nation).n_regionkey, (_:Region).r_regionkey).
+//          Select((ps, s, n, r) => new {
+//           val ps_supplycost = ps.ps_supplycost
+//         }).Min(_.ps_supplycost);
+//        if(pssc != null) pssc.ps_supplycost else -10}
+//      ).OrderByDescending(_.s_acctbal).ThenBy(_.n_name).ThenBy(_.s_name).ThenBy (_.p_partkey)
+//    println(q2.iterator) // to force it to sort
+//    PerformanceTimer.stop("q2", false)
+//    PerformanceTimer.print("q2")
+//    q2.printAsTable(100)
 //
-    println("TPCH Q3MJ:")
-    PerformanceTimer.start("q3mj",false)
-    val q3mj = customers.Where(_.c_mktsegment == "BUILDING").Join(orders).WhereEq(_.c_custkey, _.o_custkey).
-      With(lineItems).WhereEq((_:Order).o_orderkey, (_:LineItem).l_orderkey).Select((c, o, li)=> new {
-      val orderKey = o.o_orderkey
-      val orderDate = o.o_orderdate
-      val orderShipPriority = o.o_shippriority
-      val orderShipDate = li.l_shipdate
-      val extendedPrice = li.l_extendedprice
-      val discount = li.l_discount
-    }).Where(col => col.orderDate < Date("1995-03-15") && col.orderShipDate > Date("1995-03-15")
-    ).GroupBy(col => (col.orderKey,col.orderDate,col.orderShipPriority)) Select(g => new {
-      val orderKey = g.key._1
-      val revenue = g.Sum(e => e.extendedPrice * (1 - e.discount))
-      val orderDate = g.key._2
-      val shipPriority = g.key._3
-    }) OrderByDescending(_.revenue) ThenBy(_.orderDate)
-    println(q3mj.iterator)
-    PerformanceTimer.stop("q3mj",false)
-    q3mj.printAsTable(10)
-    PerformanceTimer.print("q3mj")
+//    println("TPCH Q3:")
+//    PerformanceTimer.start("q3",false)
+//    val q3 = customers.Where(_.c_mktsegment == "BUILDING").Join(orders).WhereEq(_.c_custkey, _.o_custkey).
+//      With(lineItems).WhereEq((_:Order).o_orderkey, (_:LineItem).l_orderkey).Select((c, o, li)=> new {
+//      val orderKey = o.o_orderkey
+//      val orderDate = o.o_orderdate
+//      val orderShipPriority = o.o_shippriority
+//      val orderShipDate = li.l_shipdate
+//      val extendedPrice = li.l_extendedprice
+//      val discount = li.l_discount
+//    }).Where(col => col.orderDate < Date("1995-03-15") && col.orderShipDate > Date("1995-03-15")
+//    ).GroupBy(col => (col.orderKey,col.orderDate,col.orderShipPriority)) Select(g => new {
+//      val orderKey = g.key._1
+//      val revenue = g.Sum(e => e.extendedPrice * (1 - e.discount))
+//      val orderDate = g.key._2
+//      val shipPriority = g.key._3
+//    }) OrderByDescending(_.revenue) ThenBy(_.orderDate)
+//    println(q3.iterator)
+//    PerformanceTimer.stop("q3",false)
+//    q3.printAsTable(10)
+//    PerformanceTimer.print("q3")
 
-
+//    TODO: This takes too long to run, so exclude for now
 //    println("TPCH Q4:")
 //    PerformanceTimer.start("q4",false)
 //    val q4 = orders.Where(o => (o.o_orderdate >= Date("1993-07-01")) &&
@@ -233,19 +206,32 @@ object TPCH {
 //    PerformanceTimer.stop("q4", false)
 //    PerformanceTimer.print("q4")
 //    q4.printAsTable(100)
-//
-//
-//
+
+
+//    TODO: Cannot do Q5 yet because it specifies multiple conditions on which to join (more than the number of joins)
 //    println("TPCH Q5:")
 //    PerformanceTimer.start("q5",false)
-//    val q5 = orders
+//    val q5 = customers.Join(orders).WhereEq(_.c_custkey, _.o_custkey).
+//      With(lineItems).WhereEq((_:Order).o_orderkey, (_:LineItem).l_orderkey).
+//      With(suppliers).WhereEq((_:LineItem).l_suppkey, (_:Supplier).s_suppkey).
+//
 //    println(q4.iterator) // to force it to sort
 //    PerformanceTimer.stop("q5", false)
 //    PerformanceTimer.print("q5")
 //    q5.printAsTable(100)
 
+    println("TPCH Q6:")
+    PerformanceTimer.start("q6",false)
+    val q6 = lineItems.Where(_.l_shipdate >= Date("1994-01-01")).
+      Where(_.l_shipdate < Date("1995-01-01")).
+      Where(l => l.l_discount <= 0.07 && l.l_discount >= 0.05).
+      Where(_.l_quantity < 24).
+      Sum(l => l.l_extendedprice * l.l_discount)
+    PerformanceTimer.stop("q6", false)
+    PerformanceTimer.print("q6")
+    print("Revenue : " + q6)
 
-
+    // Q7-22, we will get back to it
 
   }
 

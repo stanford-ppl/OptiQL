@@ -11,7 +11,7 @@ class Part(
   val p_type: String,
   val p_size: Int,
   val p_container: String,
-  val p_retailprice: Float,
+  val p_retailprice: Double,
   val p_comment:String
 )
 

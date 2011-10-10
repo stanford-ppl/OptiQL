@@ -35,9 +35,9 @@ abstract class Date(val year:Int, val month:Int, val day:Int) {
 
   def <(that:Date) = (year < that.year ) || (year == that.year && (month < that.month || (month == that.month && day < that.day)))
 
-  def >(that:Date) = (this <= that) == false
+  def >(that:Date) = (year > that.year ) || (year == that.year && (month > that.month || (month == that.month && day > that.day)))
 
-  def >= (that: Date) = (this == that) || (this > that)
+  def >= (that: Date) = (this > that) || (this == that)
 
   private[util] def ni = throw new RuntimeException("not implemented")
 }
