@@ -140,35 +140,35 @@ object TPCH {
     PerformanceTimer.print("q2")
     q2.printAsTable(100)
 
-//    println("TPCH Q2:")
-//    PerformanceTimer.start("q2", false)
-//    val q2 = regions.Where(_.r_name == "EUROPE").Join(nations).WhereEq(_.r_regionkey, _.n_regionkey).
-//      With(suppliers).WhereEq((_:Nation).n_nationkey, (_:Supplier).s_nationkey).
-//      With(partSuppliers).WhereEq((_:Supplier).s_suppkey, (_:PartSupplier).ps_suppkey).
-//      With(parts).Where(_.p_size == 15).Where(_.p_type.endsWith("BRASS")).WhereEq((_:PartSupplier).ps_partkey, (_:Part).p_partkey).
-//      Select((r, n, s, ps, p) => new {
-//        val s_acctbal = s.s_acctbal
-//        val s_name = s.s_name
-//        val n_name = n.n_name
-//        val p_partkey = p.p_partkey
-//        val p_mfgr = p.p_mfgr
-//        val s_address = s.s_address
-//        val s_phone = s.s_phone
-//        val s_comment = s.s_comment
-//        val ps_supplycost = ps.ps_supplycost
-//      }).Where(j => j.ps_supplycost == {
-//        val pssc = partSuppliers.Where(_.ps_partkey == j.p_partkey).Join(suppliers).WhereEq(_.ps_suppkey, _.s_suppkey).
-//          With(nations).WhereEq((_:Supplier).s_nationkey, (_:Nation).n_nationkey).
-//          With(regions).Where(_.r_name == "EUROPE").WhereEq((_:Nation).n_regionkey, (_:Region).r_regionkey).
-//          Select((ps, s, n, r) => new {
-//           val ps_supplycost = ps.ps_supplycost
-//         }).Min(_.ps_supplycost);
-//        if(pssc != null) pssc.ps_supplycost else -10}
-//      ).OrderByDescending(_.s_acctbal).ThenBy(_.n_name).ThenBy(_.s_name).ThenBy (_.p_partkey)
-//    println(q2.iterator) // to force it to sort
-//    PerformanceTimer.stop("q2", false)
-//    PerformanceTimer.print("q2")
-//    q2.printAsTable(100)
+    println("TPCH Q2:")
+    PerformanceTimer.start("q2", false)
+    val q2 = regions.Where(_.r_name == "EUROPE").Join(nations).WhereEq(_.r_regionkey, _.n_regionkey).
+      With(suppliers).WhereEq((_:Nation).n_nationkey, (_:Supplier).s_nationkey).
+      With(partSuppliers).WhereEq((_:Supplier).s_suppkey, (_:PartSupplier).ps_suppkey).
+      With(parts).Where(_.p_size == 15).Where(_.p_type.endsWith("BRASS")).WhereEq((_:PartSupplier).ps_partkey, (_:Part).p_partkey).
+      Select((r, n, s, ps, p) => new {
+        val s_acctbal = s.s_acctbal
+        val s_name = s.s_name
+        val n_name = n.n_name
+        val p_partkey = p.p_partkey
+        val p_mfgr = p.p_mfgr
+        val s_address = s.s_address
+        val s_phone = s.s_phone
+        val s_comment = s.s_comment
+        val ps_supplycost = ps.ps_supplycost
+      }).Where(j => j.ps_supplycost == {
+        val pssc = partSuppliers.Where(_.ps_partkey == j.p_partkey).Join(suppliers).WhereEq(_.ps_suppkey, _.s_suppkey).
+          With(nations).WhereEq((_:Supplier).s_nationkey, (_:Nation).n_nationkey).
+          With(regions).Where(_.r_name == "EUROPE").WhereEq((_:Nation).n_regionkey, (_:Region).r_regionkey).
+          Select((ps, s, n, r) => new {
+           val ps_supplycost = ps.ps_supplycost
+         }).Min(_.ps_supplycost);
+        if(pssc != null) pssc.ps_supplycost else -10}
+      ).OrderByDescending(_.s_acctbal).ThenBy(_.n_name).ThenBy(_.s_name).ThenBy (_.p_partkey)
+    println(q2.iterator) // to force it to sort
+    PerformanceTimer.stop("q2", false)
+    PerformanceTimer.print("q2")
+    q2.printAsTable(100)
 //
 //    println("TPCH Q3:")
 //    PerformanceTimer.start("q3",false)
