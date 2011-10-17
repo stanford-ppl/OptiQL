@@ -1,6 +1,7 @@
 package ppl.dsl.optiql.baseline
 
 import containers.{Grouping, DataTable}
+import util.PerformanceTimer
 import collection.mutable.{ArrayBuffer, HashMap}
 import java.lang.{RuntimeException}
 import ordering.{ReverseComparer, ProjectionComparer, OrderedQueryable}
@@ -163,7 +164,8 @@ class Queryable[TSource](source: Iterable[TSource]) {
       val (hashTable, _) = buildHash(first, firstKeySelector)
       val firsts = new ArrayBuffer[TFirst]
       val seconds = new ArrayBuffer[TSecond]
-
+      
+      //PerformanceTimer.start("match", false)
       for(row <- second) {
         val tryjoin = hashTable.getOrElse(secondKeySelector(row), null)
         if(tryjoin != null)
@@ -172,6 +174,7 @@ class Queryable[TSource](source: Iterable[TSource]) {
             seconds.append(row)
           }
       }
+      //PerformanceTimer.stop("match", false)
       (firsts, seconds)
     }
     def Select[TResult](resultSelector: (TFirst, TSecond) => TResult) = {
@@ -179,11 +182,13 @@ class Queryable[TSource](source: Iterable[TSource]) {
       val result = new DataTable[TResult] {
         def addRecord(fields: Array[String]) = throw new RuntimeException("Cannot add records to joined table")
       }
+      //PerformanceTimer.start("construct", false)
       var idx = 0
       while(idx < firsts.size) {
         result.data.append(resultSelector(firsts(idx), seconds(idx)))
         idx += 1
       }
+      //PerformanceTimer.stop("construct", false)
       result
     }
   }
@@ -439,6 +444,7 @@ class Queryable[TSource](source: Iterable[TSource]) {
    * Internal Implementation functions
    */
   private def buildHash[TSource,TKey](source:Iterable[TSource], keySelector: TSource => TKey) = {
+    //PerformanceTimer.start("hash", false)
     val hash = HashMap[TKey, ArrayBuffer[TSource]]()
     val keys = new ArrayBuffer[TKey]
     for (elem <- source; key = keySelector(elem)) {
@@ -447,6 +453,7 @@ class Queryable[TSource](source: Iterable[TSource]) {
         new ArrayBuffer[TSource]() //if there is no key
       }) += elem
     }
+    //PerformanceTimer.stop("hash", false)
     (hash,keys)
   }
 

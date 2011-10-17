@@ -63,7 +63,7 @@ object TPCH {
     log("Loaded input, now executing Queries")
     //Execute TPC-H queries against my tables
     //val q1 = lineItems Where(_.lineNumber < 5)
-
+/*
     println("TPCH Q1:")
     PerformanceTimer.start("q1",false)
     val q1 = lineItems Where(_.l_shipdate <= Date("1998-12-01") + Interval(90).days) GroupBy(l => (l.l_returnflag,l.l_linestatus)) Select(g => new {
@@ -82,7 +82,7 @@ object TPCH {
     PerformanceTimer.stop("q1",false)
     PerformanceTimer.print("q1")
     q1.printAsTable()
-
+*/
     println("TPCH Q2:")
     PerformanceTimer.start("q2", false)
     val q2 = parts.Where(_.p_size == 15).Where(_.p_type.endsWith("BRASS")).Join(partSuppliers).WhereEq(_.p_partkey, _.ps_partkey).Select((p, ps) => new {
@@ -134,15 +134,16 @@ object TPCH {
          val ps_supplycost = jj2.ps_supplycost
          val r_name = r.r_name
        }).Where(_.r_name == "EUROPE").Min(_.ps_supplycost); if(pssc != null) pssc.ps_supplycost else -10}
-    ).OrderByDescending(_.s_acctbal).ThenBy(_.n_name).ThenBy(_.s_name).ThenBy (_.p_partkey)
+    ).OrderByDescending(_.s_acctbal).ThenBy(_.n_name).ThenBy(_.s_name).ThenBy (_.p_partkey)*/
     println(q2.iterator) // to force it to sort
     PerformanceTimer.stop("q2", false)
     PerformanceTimer.print("q2")
-    q2.printAsTable(100)
+    q2.printAsTable(10)
 
+/*
     println("TPCH Q2:")
-    PerformanceTimer.start("q2", false)
-    val q2 = regions.Where(_.r_name == "EUROPE").Join(nations).WhereEq(_.r_regionkey, _.n_regionkey).
+    PerformanceTimer.start("q2s", false)
+    val q2s = regions.Where(_.r_name == "EUROPE").Join(nations).WhereEq(_.r_regionkey, _.n_regionkey).
       With(suppliers).WhereEq((_:Nation).n_nationkey, (_:Supplier).s_nationkey).
       With(partSuppliers).WhereEq((_:Supplier).s_suppkey, (_:PartSupplier).ps_suppkey).
       With(parts).Where(_.p_size == 15).Where(_.p_type.endsWith("BRASS")).WhereEq((_:PartSupplier).ps_partkey, (_:Part).p_partkey).
@@ -166,9 +167,10 @@ object TPCH {
         if(pssc != null) pssc.ps_supplycost else -10}
       ).OrderByDescending(_.s_acctbal).ThenBy(_.n_name).ThenBy(_.s_name).ThenBy (_.p_partkey)
     println(q2.iterator) // to force it to sort
-    PerformanceTimer.stop("q2", false)
-    PerformanceTimer.print("q2")
-    q2.printAsTable(100)
+    PerformanceTimer.stop("q2s", false)
+    PerformanceTimer.print("q2s")
+    q2s.printAsTable(100)
+    */
 //
 //    println("TPCH Q3:")
 //    PerformanceTimer.start("q3",false)
@@ -229,9 +231,13 @@ object TPCH {
       Sum(l => l.l_extendedprice * l.l_discount)
     PerformanceTimer.stop("q6", false)
     PerformanceTimer.print("q6")
-    print("Revenue : " + q6)
+    println("Revenue : " + q6)
 
     // Q7-22, we will get back to it
+
+    //PerformanceTimer.totalTime("hash")
+    //PerformanceTimer.totalTime("match")
+    //PerformanceTimer.totalTime("construct")
 
   }
 
